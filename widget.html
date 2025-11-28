@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    #rivernet-widget {
+      border: 1px solid #444;
+      padding: 8px;
+      width: 240px;
+      font-family: Arial, sans-serif;
+      background: #f9f9f9;
+    }
+    #rivernet-widget .header {
+      font-weight: bold;
+      margin-bottom: 4px;
+    }
+    #rivernet-widget .value {
+      font-size: 1.2em;
+      color: #006;
+    }
+    #rivernet-widget .time {
+      font-size: 0.9em;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+
+<div id="rivernet-widget">
+  <div class="header">Kelaniya water level</div>
+  <div class="value" id="wv">Loading…</div>
+  <div class="time" id="wt">–</div>
+</div>
+
+<script>
+  async function fetchData() {
+    try {
+      const resp = await fetch('https://rivernet.lk/kelaniya', { mode: 'cors' });
+      const html = await resp.text();
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html, 'text/html');
+
+      // Modify below: find correct selector for water-level
+      const levelElem = doc.querySelector('.some-class-or-id-for-waterlevel'); 
+      const timeElem = doc.querySelector('.some-class-or-id-for-time');
+
+      if (levelElem) {
+        document.getElementById('wv').innerText = levelElem.innerText.trim();
+      } else {
+        document.getElementById('wv').innerText = 'N/A';
+      }
+
+      if (timeElem) {
+        document.getElementById('wt').innerText = 'Updated: ' + timeElem.innerText.trim();
+      } else {
+        document.getElementById('wt').innerText = '';
+      }
+
+    } catch (err) {
+      console.error('Error fetching RIVERNET data', err);
+      document.getElementById('wv').innerText = 'Error';
+    }
+  }
+
+  fetchData();
+  // refresh every 10 minutes:
+  setInterval(fetchData, 10 * 60 * 1000);
+</script>
+
+</body>
+</html>
+
